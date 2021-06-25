@@ -1,2 +1,2 @@
-#JSHEIGHT
-This file is a jquery plugin that controls the height of a web page by setting the mininum and maximum height according to the screen height of the device.
+#Form Validator
+This javascript file is a jquery plugin that uses attributes to validate input forms
