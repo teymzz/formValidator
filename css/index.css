@@ -1,0 +1,21 @@
+.content-field fieldset {
+    margin-bottom: .5em;
+}
+
+.content-field fieldset input {
+    padding: 12px 0;
+}
+
+.content-field {
+    width: 50vw;
+}
+
+.control-btns {
+    min-width: 120px;
+}
+
+@media screen and (max-width:1000px) {
+    .content-field {
+        width: 100%;
+    }
+}

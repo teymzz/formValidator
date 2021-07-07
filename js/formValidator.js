@@ -3,8 +3,10 @@
         var field = $(this);
         var responseField, submitBtn;
 
+        //set the field object
         indefaults.field = field;
-        //get submit button
+
+        //get the submit button
         if (field.find('[data-type="submit"]')) {
             submitBtn = field.find('[data-type="submit"]')
         } else {
@@ -12,8 +14,9 @@
         }
 
         //all input fields
-        var allInputs = field.find(":input:not([type='submit'])");
+        var allInputs = field.find(":input:not(:button):not([data-skip])");
 
+        //set all inputs and submit buttons
         indefaults.allInputs = allInputs;
         indefaults.submitBtn = submitBtn;
 
@@ -42,10 +45,17 @@
         passField1 = (passFieldCount > 0) ? field.find("input[type='password']").eq(0) : false;
         passField2 = (passFieldCount > 1) ? field.find("input[type='password']").eq(1) : false;
 
-        field.find(":input:not([type='submit'])").each(function(index, item) {
-            var xChecker = runChecker(this);
+        field.find(":input:not(:button):not([data-skip])").each(function(index, item) {
+            runChecker(this);
             $(this).on("input keyup", function() {
-                var rChecker = runChecker(this);
+                //get the input controllers
+                let timeout = $(this).attr('data-wait') || field.attr('data-wait') || 0;
+                timeout = +timeout;
+
+                setTimeout(() => {
+                    var rChecker = runChecker(this);
+                }, timeout);
+
             })
         })
 
@@ -96,31 +106,31 @@
             userPassField1: passField1,
             userPassField2: passField2,
             validateBtn: validateBtn,
-            allInputs: indefaults.allInputs
+            allInputs: indefaults.allInputs,
+            initMess: false
         }
 
         buttonHolder.attr({ "data-active": "false" });
         (validateBtn == true) ? buttonHolder.attr({ "disabled": "disabled" }): null;
         (validateBtn == true) ? submitBtn.attr({ "disabled": "disabled" }): null;
-        fieldObject.initMess = false;
+        anchors.initMess = fieldObject.initMess;
 
         //CASE 1: (empty fields)
         if (dataLength < 1) {
             if (field.is('[data-init]')) { fieldObject.initMess = true; }
             if (isRequired) {
-                responseField.html("<span class='form-validator-message'> please fill " + fieldName + " <span class='fa fa-times-circle'></span> </span>");
+                $(responseField).html("<span class='form-validator-message'> please fill " + fieldName + " <span class='fa fa-times-circle'></span> </span>");
                 allValidator(field, fieldObject)
                 return false;
             } else {
                 return allValidator(field, fieldObject);
             }
-
         }
 
         //CASE 2: (not empty fields) 
-
         if (isRequired) {
             var validation = BasicValidator(anchors);
+
             if (validation === true) {
                 return allValidator(field, fieldObject);
             } else {
@@ -144,8 +154,6 @@
                 return allValidator(field, fieldObject);
             }
         }
-
-
 
     }
 
@@ -174,6 +182,46 @@
 
         var error_response = "invalid data supplied in" + fieldName;
 
+        //colors controllers
+        var colorSets = ['fill', 'text', 'shadow', 'line'];
+
+        var colorSet = $(elem).attr("data-fillset") || formField.attr('data-fillset');
+        var colorFill = $(elem).attr("data-fill") || formField.attr('data-fill');
+
+        let objectFiller = {};
+
+        if (colorSet != false) {
+            if (colorFill && colorSet) {
+
+                //split the color filler
+                let colors = colorFill.split(" ");
+
+                //ensure that both colors and fill type is set
+                if ((colors.length > 0) && colorSets.includes(colorSet)) {
+
+                    objectFiller.type = colorSet;
+
+                    if (colors.length == 1) {
+                        objectFiller.error = "";
+                        objectFiller.success = colors[0];
+                    }
+
+                    if (colors.length > 1) {
+                        objectFiller.error = (colors[0] == "-") ? '' : colors[0];
+                        objectFiller.success = (colors[1] == "-") ? '' : colors[1];
+                    }
+
+                    if (colors.length === 3) {
+                        objectFiller.shadow = +colors[2];
+                    }
+
+                }
+            }
+        }
+
+
+
+        //split the color fill
 
         var dataValue = ($(elem).val() != null) ? $(elem).val().trim() : null;
         var dataLength = (dataValue == null) ? 0 : dataValue.length;
@@ -182,9 +230,10 @@
             allowChars = "all";
         }
 
-        var dataIndex = formField.find(":input").index($(elem)) + 1;
+        var dataIndex = formField.find(":input:not(:button):not([data-skip])").index($(elem)) + 1;
 
         var inputObject = {
+            dataInput: $(elem),
             dataIndex: dataIndex,
             dataType: dataType,
             dataValue: dataValue,
@@ -201,13 +250,16 @@
             isRequired: isRequired,
             allowSpace: allowSpace,
             allowChars: allowChars,
-            rexPattern: rexPattern
+            rexPattern: rexPattern,
+            filler: objectFiller,
         }
 
         return inputObject;
     }
 
     function BasicValidator(anchors) {
+
+        var input = anchors.dataInput;
         var isRequired = anchors.isRequired;
         var isTextField = anchors.isTextField;
         var isMailField = anchors.isMailField;
@@ -235,6 +287,9 @@
         var allowChars = anchors.allowChars;
         var rexPattern = anchors.rexPattern;
 
+        //colors
+        var filler = anchors.filler;
+
         fieldName = (fieldName == "") ? "field " + dataIndex : fieldName;
         buttonHolder.attr({ "data-active": "false" });
         (validateBtn == true) ? buttonHolder.attr({ "disabled": "disabled" }): null;
@@ -245,42 +300,45 @@
         //field count
 
         var voids = 0;
-        var fieldCount = indefaults.field.find(":input").length;
+        var fieldCount = indefaults.field.find(":input:not(:button):not([data-skip])").length;
         var mshide = "";
 
         if (anchors.initMess == false) {
+
             var iField;
             for (var i = 0; i < fieldCount; i++) {
-                iField = indefaults.field.find(":input:not([data-skip])").eq(i);
+                iField = indefaults.field.find(":input:not(:button):not([data-skip])").eq(i);
                 if (iField.val() == "" || iField.val() == null) {
                     voids = voids + 1;
                 }
             }
-            //console.log(voids, fieldCount);
+
             if (voids == fieldCount) {
                 buttonHolder.attr({ "disabled": "disabled" })
                 button.attr({ "disabled": "disabled" });
                 responseField.html('');
+                inputFiller(input, filler, false);
                 return false;
             }
         }
 
         if (isRequired == false && dataLength < 1) {
             responseField.html("");
-            buttonHolder.attr({ "data-active": "true" });
             buttonHolder.removeAttr("disabled");
+            inputFiller(input, filler, 'reset');
             button.removeAttr("disabled");
             return true;
         }
 
-
         if (isNumField == true && isNaN(dataValue)) {
-            responseField.html(" <span class='form-validator-message'> " + fieldName + " must be number </span>")
+            responseField.html(" <span class='form-validator-message'> " + fieldName + " must be number </span>");
+            inputFiller(input, filler, false);
             return false;
         }
 
         if (isNumField == true && dataValue == false && isStrict != false) {
             responseField.html(" <span class='form-validator-message'> " + fieldName + " must be valid </span>");
+            inputFiller(input, filler, false);
             return false;
         }
 
@@ -293,11 +351,14 @@
                 responseField.html(" <span class='form-validator-message'> " + fieldName + " is too long  </span>");
             }
 
+            inputFiller(input, filler, false);
+
             return false;
         }
 
         if (dataLength < 1) {
             responseField.html("<span class='form-validator-message'> Please fill " + fieldName + " </span>");
+            inputFiller(input, filler, false);
             return false;
         }
 
@@ -306,6 +367,7 @@
             if (allowSpace == false) {
                 if (/\s/.test(dataValue)) {
                     responseField.html("<span class='form-validator-message'> Invalid space in " + fieldName + "</span>");
+                    inputFiller(input, filler, false);
                     return false;
                 }
             }
@@ -313,6 +375,7 @@
             if (allowChars == "text" && dataLength > 1) {
                 if (/^[\w+\s]*$/i.test(dataValue) != true) {
                     responseField.html("<span class='form-validator-message'> Invalid characters in " + fieldName + "</span>");
+                    inputFiller(input, filler, false);
                     return false;
                 }
             } else if (allowChars != "text" && allowChars != 'all') {
@@ -327,6 +390,7 @@
 
                 if (regex.test(dataValue) != true) {
                     responseField.html("<span class='form-validator-message'> Invalid characters in " + fieldName + "</span>");
+                    inputFiller(input, filler, false);
                     return false;
                 }
             }
@@ -337,6 +401,7 @@
             var pattern = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
             if (pattern.test(String(dataValue).toLowerCase()) == false) {
                 responseField.html("<span class='form-validator-message'> invalid " + fieldName + "</span>");
+                inputFiller(input, filler, false);
                 return false;
             }
 
@@ -352,6 +417,7 @@
                 } else {
                     //password mismatch
                     responseField.html("<span class='form-validator-message'> password does not match </span>");
+                    inputFiller(input, filler, false);
                     return false;
                 }
             }
@@ -362,7 +428,74 @@
         buttonHolder.attr({ "data-active": "true" });
         (validateBtn == true) ? buttonHolder.removeAttr("disabled"): null;
         (validateBtn == true) ? button.removeAttr("disabled"): null;
+        inputFiller(input, filler, true);
         return true;
+    }
+
+    function inputFiller(input, filler, action) {
+
+        if (action === "reset") {
+            if (filler.success || filler.error) {
+                input.css({ 'color': '' });
+            }
+
+            if (filler.shadow) {
+                input.css({ 'box-shadow': '' });
+            }
+
+            return;
+        }
+
+        let key, color, width;
+
+        key = (action === true) ? 'success' : 'error';
+
+        if ((key === 'success') || (key === 'error')) {
+            color = filler[key];
+
+
+
+            if (filler.type === 'fill') {
+                input.css({ 'background-color': color });
+            }
+
+            if (filler.type === 'text') {
+                input.css({ "color": color });
+            }
+
+            if (filler.type === 'shadow') {
+                width = filler.border;
+                input.css({ 'border': `0 0 0 ${width}px ${color} inset` });
+            }
+
+            if (filler.type === 'line') {
+                width = filler.shadow;
+                if ((key == "error") && (color == "")) {
+                    input.css({ 'color': `${color}`, 'box-shadow': '' });
+                } else {
+                    input.css({ 'color': `${color}`, 'box-shadow': `0 0 0 ${width}px ${color} inset` });
+                }
+            }
+        }
+
+
+
+    }
+
+    function isButton(selector) {
+
+        itemName = selector.prop('tagName');
+        itemAttr = selector.attr('type');
+
+        if (item == "") { return; }
+
+        item = item.toLowerCase();
+
+        if (itemName == 'button') return true;
+
+        if (itemName == 'input' && itemAttr == 'submit') return true;
+
+        return false;
     }
 
     function allValidator(field, fieldObject) {
@@ -392,6 +525,7 @@
 
                 (fieldObject.validateBtn == true) ? fieldObject.submitBtn.removeAttr("disabled"): null;
                 (fieldObject.validateBtn == true) ? fieldObject.buttonHolder.removeAttr("disabled"): null;
+                inputFiller(input, filler, 'reset');
                 return true;
             }
 
