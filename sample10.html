@@ -9,7 +9,7 @@
     <meta http-equiv="pragma" content="no-cache">
     <meta http-equiv="expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form Validator -Sample 10</title>
+    <title>Form Validator -Sample 11</title>
     <link rel="stylesheet" href="css/design.css">
     <link rel="stylesheet" href="css/colors.css">
     <link rel="stylesheet" href="css/index.css">
@@ -21,52 +21,35 @@
         <div class="overlay bg-cover grid-center">
             <div class="padd-20 content-field">
                 <div class="">
-                    <h2>Colors - Setting Fill colors</h2>
+                    <h2>Ajax - Validating Http Urls</h2>
                     <span class="font-em-d85">
-                        Input fields with attribute <code>data-fillset=""</code> is used to set fill colors type for errors and successes.<br><br>
-
-                        Parameters accepted are : 
+                        Input fields with attribute <code>data-type="url"</code> sets the url to be validated using regex pattern <br><br>
                         
-                        <br><br> <code>fill</code> - fill background colors <br>
-                        <code>text</code> - fill text colors <br>
-                        <code>shadow</code> - fill shadow colors <br>
-                        <code>line</code> - fill shadow and text colors <br><br>
-
-                        Input fields with attribute <code>data-fill=""</code> is used to set fill colors for errors and successes.<br><br>
-
-                        It accepts one or more colors. When one color is used, it regards the color as the success color. When two are used, the first color will stand as error color while the second will stand as success color. When 3 parameters are supplied, the third parameter will stand as box shadow thickness. Whenever <code>"-"</code> is used to represent a color, the color will not be applied.
-                        
-                        
-                        Input fields below are validated only by adding the following required attributes to the form field:<br><br>
-                        <code>data-fillset="line"</code> - for setting color. <br>
-                        <code>data-fill="- lime 2"</code> - for setting color. <br>
-                        This value can be used generally on the form field or on the input field. When set on both, input field will overide input field
+                        Input fields below are validated only by adding the following required attributes to the input field:<br><br>
+                        <code>data-url</code> - for validating urls. <br>
                     </span>
                 </div><br>
-                <div class="form-title c-red-dd">
-                    <h2>My Form</h2>
-                </div> <br>
 
-                <div class="form-field" data-form="validate" data-resp=".resp">
-                    <div class="resp"></div>
+
+                <div id="form1" class="form-field" data-form="validate" data-resp=".rep">
+                    <div class="rep"></div>
                     <fieldset class="i-flex-full">
-                        <button class="flex-child bc-silver c-white padd-x-10 flex-ico">Password</button>
-                        <input type="password" data-min="5" data-max="10" data-fillset="fill" data-fill="- lime 2" name="user" required placeholder="5 - 10 chars only" class="flex-full" style="padding-left:10px;">
+                        <button class="flex-child bc-silver c-white padd-x-10 flex-ico no-wrap">URL Validator</button>
+                        <input required data-type="url" name="url" placeholder="please input your url" class="flex-full" style="padding-left:10px;">
                     </fieldset>
-                    <fieldset class="i-flex-full">
-                        <button class="flex-child bc-silver c-white padd-x-10 flex-ico">Retype</button>
-                        <input type="password" data-min="5" data-max="10" data-fillset="fill" data-fill="- lime 2" name="user" required placeholder="5 - 10 chars only" class="flex-full" style="padding-left:10px;">
-                    </fieldset>
-                    <fieldset class="i-flex-full padd-10 bc bc-red-d bh-red-dd c-white anc-btn-link">
+
+                    <fieldset class="i-flex-full padd-10 bc bc-sky-blue bh-red-dd c-white anc-btn-link">
                         <button type="submit" data-type="submit" class="flex-btn-full c-white"> submit </button>
                     </fieldset>
                 </div>
 
 
-                <div class="font-em-d85"> <br> <b>Note that:</b>
+
+                <div class="controls-pane">
+                    <br>
                     <ol class="padd-left-14">
                         <li>
-                            In the above field, both password fields will be validated.
+                            In the above field, the <code>data-type="url"</code> is set on the input field.
                         </li>
                         <li>
                             All attributes discussed on this page may be used in other samples but will not be explained.
@@ -76,14 +59,13 @@
                         <a href="index.html" class="anc-btn-link">
                             <span class="span-btns rad-2 bc-sky-blue-dd c-white padd-6 control-btns"> << Home </span>
                         </a>
-                        <a href="sample7.html" class="anc-btn-link">
+                        <a href="sample9.html" class="anc-btn-link">
                             <span class="span-btns rad-2 bc-red-dd c-white padd-6 control-btns"> << PREVIOUS </span>
                         </a>
-                        <a href="sample9.html" class="anc-btn-link">
+                        <a href="sample11.html" class="anc-btn-link">
                             <span class="span-btns rad-2 bc-lime-dd c-white padd-6 control-btns"> NEXT >> </span>
                         </a>
                     </div>
-
                 </div>
             </div>
         </div>

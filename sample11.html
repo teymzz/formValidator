@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="cache-control" content="max-age=0">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Validator -Sample 11</title>
+    <link rel="stylesheet" href="css/design.css">
+    <link rel="stylesheet" href="css/colors.css">
+    <link rel="stylesheet" href="css/index.css">
+    <script src="js/jquery-3.5.1.min.js"></script>
+</head>
+
+<body>
+    <div id="v-form" data-form="validate" data-wait="1500" data-resp=".resp" class="grid-center bc-sky-blue-dd relative">
+        <div class="overlay bg-cover grid-center">
+            <div class="padd-20 content-field">
+                <div class="">
+                    <h2>Ajax - Validating form using ajax</h2>
+                    <span class="font-em-d85">
+
+                        Input fields with attribute <code>data-url=""</code> is validated through ajax. Every other attributes set within the input field will be validated and then the data will be pushed to ajax validated. Input fields with this attribute works with other attributes explained below. <br><br>
+
+                        Attributes are : 
+                        
+                        <br><br> 
+                        <code class="main">data-url</code> - sets the domain url of the ajax file<br>
+                        <code class="main">data-keys</code> - takes a maximum of 2 keys. This will be explained below<br><br>
+
+                        <h3>Relative Attributes</h3>
+
+                        <h4>data-url</h4>
+                        This attribute must contain the domain url of the file where the data should be pushed for validation <br><br>
+                        
+                        <h4>data-keys</h4>
+                        This is a pointer attribute. The default values are "valid msg", if not set. It directs the form to fetch the key values from a returned json ajax response. The first value will check for a similar key name that has true or false to detect whether the data was valid. The second value (optional) will point the form to an error message that is meant to be displayed if the first value returned in json response is false.. The second value if not set, will assume a default of <code>msg</code> A sample format is shown below<br><br>
+
+                        <div class="code-block border-true">
+                            <div class="padd-10 bc-white-dd">code block 1</div>
+                            <div class="padd-10">
+                                <code>&lt;input data-url="http://www.myfile.com/file.php" data-key="valid msg"&gt;</code> <br>              
+                            </div>
+                        </div> <br>
+                        
+                        <div class="code-block border-true">
+                            <div class="padd-10 bc-white-dd">code block 2</div>
+                            <div class="padd-10">                         
+<code class="pre">             
+
+
+    {
+        "valid": "false", <br>
+        "msg": "user exists"<br>
+    }<br>  
+</code>
+</div> 
+                        </div> <br>
+
+                        <h4>Explanation</h4>
+
+                        <div class="">
+                            Assuming <b>code block 1</b> is our input and <b>code block 2</b> is the response returned from the url supplied in <code>data-url="http://www.myfile.com/file.php"</code>, since the first key value in <code>data-keys</code> <b>valid</b>  is false in our json response, the second key value <b>msg</b> will be returned as the error message. If "valid" is true, no message is returned which means that and the input value will be accepted. This operation will also affect the main submit button attached to the form. If there are other input fields that are yet to be validated, even if the input field containing data-url returns a valid response, the submit form will not be active until all fields are validated. The operation is also blended to work along with colors which will be discussed in the next page.<br> <br>
+                            
+                            <h3>NOTICE!!!</h3>
+                            The sample below is tested using a local server. This may not work online. Clone and run through a local server to see it work. Ensure that your <code>data-url</code> value to points to the right backend file using the http or https protocol.
+                        </div> 
+
+                    </span>
+                </div><br>
+
+
+                <div id="form1" class="form-field" data-form="validate" data-wait="500" data-resp=".rep">
+                    <div class="rep"></div>
+                    <fieldset class="i-flex-full">
+                        <button class="flex-child bc-silver c-white padd-x-10 flex-ico">Firstname</button>
+                        <input required data-min="5" data-max="10" data-fillset="shadow" data-fill="red lime 2" name="firstname" placeholder="5 - 10 chars only" class="flex-full" style="padding-left:10px;">
+                    </fieldset>
+                    <fieldset class="i-flex-full">
+                        <button class="flex-child bc-silver c-white padd-x-10 flex-ico">Lastname</button>
+                        <input required data-min="5" allow-space="false" data-strict data-max="10" data-fillset="shadow" data-fill="red lime 2" name="lastname" placeholder="5 - 10 chars only" class="flex-full" style="padding-left:10px;">
+                    </fieldset>
+                    <fieldset class="i-flex-full">
+                        <button class="flex-child bc-silver c-white padd-x-10 flex-ico">Username</button>
+                        <input required type="text" data-min="5" data-max="50" data-keys="valid msg" data-fillset="shadow" data-url="http://localhost/myprojects/formValidator/test.php" data-fill="red lime 2" name="username" placeholder="try typing felix" class="flex-full" style="padding-left:10px;">
+                    </fieldset>
+
+                    <fieldset class="i-flex-full padd-10 bc bc-sky-blue bh-red-dd c-white anc-btn-link">
+                        <button type="submit" data-type="submit" class="flex-btn-full c-white"> submit </button>
+                    </fieldset>
+                </div>
+
+
+
+                <div class="controls-pane">
+                    <br>
+                    <div class="text-center font-em-d85 bold">
+                        <a href="index.html" class="anc-btn-link">
+                            <span class="span-btns rad-2 bc-sky-blue-dd c-white padd-6 control-btns"> << Home </span>
+                        </a>
+                        <a href="sample10.html" class="anc-btn-link">
+                            <span class="span-btns rad-2 bc-red-dd c-white padd-6 control-btns"> << PREVIOUS </span>
+                        </a>
+                        <a href="sample12.html" class="anc-btn-link">
+                            <span class="span-btns rad-2 bc-lime-dd c-white padd-6 control-btns"> NEXT >> </span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/formValidator.js"></script>
+    <script>
+        formValidator();
+    </script>
+</body>
+
+</html>

@@ -39,21 +39,47 @@
 
         indefaults.responseField = responseField = field.find(mainOps.responsePane);
 
-
-        passFieldCount = field.find("input[type='password']").length;
-
-        passField1 = (passFieldCount > 0) ? field.find("input[type='password']").eq(0) : false;
-        passField2 = (passFieldCount > 1) ? field.find("input[type='password']").eq(1) : false;
+        if (field.find("input[data-type='password'][data-check]").length > 0) {
+            passFieldCount = field.find("input[data-type='password'][data-check]").length;
+            passField1 = (passFieldCount > 0) ? field.find("input[data-type='password'][data-check]").eq(0) : false;
+            passField2 = (passFieldCount > 1) ? field.find("input[data-type='password'][data-check]").eq(1) : false;
+        } else {
+            passFieldCount = field.find("input[type='password'][data-check]").length;
+            passField1 = (passFieldCount > 0) ? field.find("input[type='password'][data-check]").eq(0) : false;
+            passField2 = (passFieldCount > 1) ? field.find("input[type='password'][data-check]").eq(1) : false;
+        }
 
         field.find(":input:not(:button):not([data-skip])").each(function(index, item) {
-            runChecker(this);
-            $(this).on("input keyup", function() {
+
+            //applying data-init to start operation
+            if ((typeof field.attr('data-init') !== 'undefined') && (typeof field.attr('data-init') !== 'false')) {
+                let initFill = false;
+                allInputs.each(function() {
+                    if ($(this).val().length > 1) {
+                        initFill = true;
+                        return;
+                    }
+                })
+                runChecker(this, initFill);
+            }
+
+            //runChecker(this);
+            $(this).on("input keyup", function(e) {
                 //get the input controllers
+
+                let thisCall = $(this);
+                if ($(this).attr('data-url')) {
+                    //set status
+                    $(this).removeAttr('data-req');
+                    $(this).removeAttr('data-process');
+                }
+
                 let timeout = $(this).attr('data-wait') || field.attr('data-wait') || 0;
                 timeout = +timeout;
-
+                indefaults.current = index;
+                indefaults.thisInput = {};
                 setTimeout(() => {
-                    var rChecker = runChecker(this);
+                    var rChecker = runChecker(thisCall);
                 }, timeout);
 
             })
@@ -61,7 +87,10 @@
 
     }
 
-    function runChecker(elem) {
+    function runChecker(elem, fill) {
+
+        fill = (fill !== false) ? true : false;
+
         var anchors = inputAttributes(elem);
 
         dataType = anchors.dataType;
@@ -73,6 +102,7 @@
         isNumField = anchors.isNumField;
         isPassField = anchors.isPassField;
         isTextField = anchors.isTextField;
+        isUrlField = anchors.isUrlField;
         isRequired = anchors.isRequired;
         isTextArea = anchors.isTextArea;
         isStrict = anchors.isStrict;
@@ -95,6 +125,7 @@
 
         anchors.userPassField2 = passField2;
         anchors.validateBtn = validateBtn;
+        anchors.fill = fill;
 
         var fieldObject = {
             field: field,
@@ -107,7 +138,8 @@
             userPassField2: passField2,
             validateBtn: validateBtn,
             allInputs: indefaults.allInputs,
-            initMess: false
+            initMess: false,
+            fill: fill
         }
 
         buttonHolder.attr({ "data-active": "false" });
@@ -159,67 +191,46 @@
 
     function inputAttributes(elem) {
 
-        var dataMin = $(elem).attr('data-min') || 0;
-        var dataMax = $(elem).attr('data-max') || 1000000000000000000;
-        var dataType = ($(elem).attr("type")) ? $(elem).attr("type") : (($(elem).attr("data-type")) ? $(elem).attr("data-type") : "text");
-        var fieldName = ($(elem).attr("name")) ? $(elem).attr("name") + " field" : "";
-        var fieldName = fieldName.replace("_", " ");
-        var fieldName = ($(elem).attr("data-fieldname")) ? $(elem).attr("data-fieldname") : fieldName;
-        var strict = ($(elem).attr("data-strict"));
-        var allowSpace = ($(elem).attr("allow-space") == "false") ? false : true; //def: false
-        var specialChars = $(elem).attr("allow-chars");
-
-        var allowChars = (specialChars == 'all' || specialChars == '*') ? "all" : ((specialChars == null || specialChars == undefined) ? "text" : specialChars);
-        var rexPattern = $(elem).attr("data-rex");
-        var isNumField = ($(elem).attr('type') == 'number' || $(elem).attr('data-type') == 'number') ? true : false;
-        var isPassField = ($(elem).attr('type') == 'password' || $(elem).attr('data-type') == 'password') ? true : false;
-        var isTextField = ($(elem).attr('type') == 'text' || $(elem).attr('type') == '' || $(elem).attr('type') == 'undefined' || $(elem).attr('data-type') == 'text') ? true : false;
-        var isMailField = ($(elem).attr('type') == 'email' || $(elem).attr('data-type') == 'email') ? true : false;
-        var isTextArea = ($(elem).prop('tagName') == 'TEXTAREA' || $(elem).attr('data-type') == 'textarea') ? true : false;
-        var isStrict = (strict == 'false') ? false : true;
+        // field declarations
         var isRequired = ($(elem).attr("required")) ? true : false;
         var formField = indefaults.field;
 
+        // length controllers
+        var dataMin = $(elem).attr('data-min') || 0;
+        var dataMax = $(elem).attr('data-max') || 1000000000000000000;
+
+        // type controller
+        var dataType = ($(elem).attr("type")) ? $(elem).attr("type") : (($(elem).attr("data-type")) ? $(elem).attr("data-type") : "text");
+
+        //  input name
+        var fieldName = ($(elem).attr("name")) ? $(elem).attr("name") + " field" : "";
+        fieldName = fieldName.replace("_", " ");
+        fieldName = ($(elem).attr("data-fieldname")) ? $(elem).attr("data-fieldname") : fieldName;
+
+        // field settings
+        var allowSpace = ($(elem).attr("allow-space") == "false") ? false : true; //def: false
+        var specialChars = $(elem).attr("allow-chars");
+        var allowChars = (specialChars == 'all' || specialChars == '*') ? "all" : ((specialChars == null || specialChars == undefined) ? "text" : specialChars);
+
+        // input data pointers
+        var rexPattern = $(elem).attr("data-rex");
+        var isNumField = ($(elem).attr('type') == 'number' || $(elem).attr('data-type') == 'number') ? true : false;
+        var isPassField = ($(elem).attr('type') == 'password' || $(elem).attr('data-type') == 'password') ? true : false;
+        var isTextField = ($(elem).attr('type') == 'text' || $(elem).attr('type') == '' || $(elem).attr('type') == undefined);
+        var isTextInput = ($(elem).attr('data-type') == 'text') ? true : false;
+        var isTextNum = ($(elem).attr('data-type') == 'text-num') ? true : false;
+        var isUrlField = ($(elem).attr('data-type') == 'url') ? true : false;
+        var isMailField = ($(elem).attr('type') == 'email' || $(elem).attr('data-type') == 'email') ? true : false;
+        var isTextArea = ($(elem).prop('tagName') == 'TEXTAREA' || $(elem).attr('data-type') == 'textarea') ? true : false;
+        var isStrict = (typeof $(elem).attr("data-strict") !== 'undefined' && $(elem).attr("data-strict") !== false) ? true : false;
+        var strictValue = (+$(elem).attr("data-strict") === 2) ? 2 : 1;
+
+
         var error_response = "invalid data supplied in" + fieldName;
-
-        //colors controllers
-        var colorSets = ['fill', 'text', 'shadow', 'line'];
-
-        var colorSet = $(elem).attr("data-fillset") || formField.attr('data-fillset');
-        var colorFill = $(elem).attr("data-fill") || formField.attr('data-fill');
 
         let objectFiller = {};
 
-        if (colorSet != false) {
-            if (colorFill && colorSet) {
-
-                //split the color filler
-                let colors = colorFill.split(" ");
-
-                //ensure that both colors and fill type is set
-                if ((colors.length > 0) && colorSets.includes(colorSet)) {
-
-                    objectFiller.type = colorSet;
-
-                    if (colors.length == 1) {
-                        objectFiller.error = "";
-                        objectFiller.success = colors[0];
-                    }
-
-                    if (colors.length > 1) {
-                        objectFiller.error = (colors[0] == "-") ? '' : colors[0];
-                        objectFiller.success = (colors[1] == "-") ? '' : colors[1];
-                    }
-
-                    if (colors.length === 3) {
-                        objectFiller.shadow = +colors[2];
-                    }
-
-                }
-            }
-        }
-
-
+        objectFiller = fillBucket(elem);
 
         //split the color fill
 
@@ -242,9 +253,13 @@
             dataMax: dataMax,
             fieldName: fieldName,
             isStrict: isStrict,
+            strictValue: strictValue,
+            isTextField: isTextField,
+            isTextInput: isTextInput,
+            isTextNum: isTextNum,
             isNumField: isNumField,
             isPassField: isPassField,
-            isTextField: isTextField,
+            isUrlField: isUrlField,
             isMailField: isMailField,
             isTextArea: isTextArea,
             isRequired: isRequired,
@@ -257,38 +272,147 @@
         return inputObject;
     }
 
+    function fillBucket(elem) {
+        let objectFiller = {};
+        formField = indefaults.field;
+
+        //colors controllers
+        var colorSets = ['fill', 'text', 'shadow', 'line'];
+
+        var colorSet = $(elem).attr("data-fillset") || formField.attr('data-fillset');
+        var colorFill = $(elem).attr("data-fill") || formField.attr('data-fill');
+
+        if (colorSet != false) {
+            if (colorFill && colorSet) {
+
+                //split the color filler
+                let colors = colorFill.split(" ");
+
+                //ensure that both colors and fill type is set
+                if ((colors.length > 0) && colorSets.includes(colorSet)) {
+
+                    objectFiller.type = colorSet;
+
+                    if (colorFill.includes(":")) {
+
+                        //allow shorhand usage
+                        let fmColors = colors.map(color => { return color.replace(":", ""); })
+
+                        if (colorSet === 'fill') {
+                            if ((fmColors.length === 1)) {
+                                objectFiller.success = (fmColors[0] == "-") ? '' : fmColors[0];
+                                objectFiller.error = "";
+                            } else if ((fmColors.length === 2)) {
+                                objectFiller.success = (fmColors[1] == "-") ? '' : fmColors[1];
+                                objectFiller.error = (fmColors[0] == "-") ? '' : fmColors[0];
+                            }
+                        } else {
+                            return;
+                        }
+
+                    } else if (!colorFill.includes(":") && (colorSet === "fill")) {
+
+                        //filling fields
+                        if (colors.length === 1) {
+                            objectFiller.success = (colors[0] == "-") ? '' : colors[0];
+                        } else if (colors.length === 2) {
+                            objectFiller.success = (colors[1] == "-") ? '' : colors[1];
+                            objectFiller.error = (colors[0] == "-") ? '' : colors[0];
+                        } else if ((colors.length > 2) && (colors.length < 5)) {
+                            colors[3] = (typeof colors[3] != 'undefined') ? colors[3] : '';
+
+                            objectFiller.success = (colors[2] == "-") ? '' : colors[2];
+                            objectFiller.successText = (colors[3] == "-") ? '' : colors[3];
+
+                            objectFiller.error = (colors[0] == "-") ? '' : colors[0];
+                            objectFiller.errorText = (colors[1] == "-") ? '' : colors[1];
+                        }
+                    } else {
+                        if (colors.length == 1) {
+                            objectFiller.error = "";
+                            objectFiller.success = colors[0];
+                        }
+
+                        if (colors.length > 1) {
+                            objectFiller.error = (colors[0] == "-") ? '' : colors[0];
+                            objectFiller.success = (colors[1] == "-") ? '' : colors[1];
+                        }
+
+                        if (colors.length === 3) {
+                            objectFiller.shadow = +colors[2];
+                        }
+                    }
+
+                }
+            }
+        }
+        return objectFiller;
+    }
+
     function BasicValidator(anchors) {
 
-        var input = anchors.dataInput;
-        var isRequired = anchors.isRequired;
-        var isTextField = anchors.isTextField;
-        var isMailField = anchors.isMailField;
-        var isPassField = anchors.isPassField;
-        var isNumField = anchors.isNumField;
-        var isStrict = anchors.isStrict;
+        let input = anchors.dataInput;
+        let isRequired = anchors.isRequired;
+        let isTextField = anchors.isTextField;
+        let isTextInput = anchors.isTextInput;
+        let isTextNum = anchors.isTextNum;
+        let isUrlField = anchors.isUrlField;
+        let isMailField = anchors.isMailField;
+        let isPassField = anchors.isPassField;
+        let isNumField = anchors.isNumField;
+        let isStrict = anchors.isStrict;
+        let strictValue = anchors.strictValue;
 
-        var dataIndex = anchors.dataIndex;
-        var dataValue = anchors.dataValue;
-        var dataLength = anchors.dataLength;
-        var dataMin = anchors.dataMin;
-        var dataMax = anchors.dataMax;
-        var fieldName = anchors.fieldName;
-        var responseField = anchors.responseBox;
-        var button = anchors.submitBtn;
-        var buttonHolder = anchors.buttonHolder;
-        var formField = anchors.formField;
-        var passFieldCount = anchors.passFieldCount;
-        var userPassField1 = anchors.userPassField1;
-        var userPassField2 = anchors.userPassField2;
-        var validateBtn = anchors.validateBtn;
+        let dataIndex = anchors.dataIndex;
+        let dataValue = anchors.dataValue;
+        let dataLength = anchors.dataLength;
+        let dataMin = anchors.dataMin;
+        let dataMax = anchors.dataMax;
+        let field = indefaults.field;
+        let fieldName = anchors.fieldName;
+        let responseField = anchors.responseBox;
+        let button = anchors.submitBtn;
+        let buttonHolder = anchors.buttonHolder;
+        let formField = anchors.formField;
+        let passFieldCount = anchors.passFieldCount;
+        let userPassField1 = anchors.userPassField1;
+        let userPassField2 = anchors.userPassField2;
+        let validateBtn = anchors.validateBtn;
 
         //special validation
-        var allowSpace = anchors.allowSpace;
-        var allowChars = anchors.allowChars;
-        var rexPattern = anchors.rexPattern;
+        let allowSpace = anchors.allowSpace;
+        let allowChars = anchors.allowChars;
+        let rexPattern = anchors.rexPattern;
 
         //colors
-        var filler = anchors.filler;
+        let filler = anchors.filler;
+        let fill = anchors.fill;
+
+        if (anchors.ajax) {
+
+            let ajaxResp = anchors.ajax;
+
+            anchors.ajax = undefined;
+
+            if (ajaxResp == 'success') {
+                //open button
+
+                buttonHolder.attr({ "data-active": "true" });
+                (validateBtn == true) ? buttonHolder.removeAttr("disabled"): null;
+                (validateBtn == true) ? button.removeAttr("disabled"): null;
+                inputFiller(input, true, fill);
+            } else {
+                (validateBtn == true) ? buttonHolder.attr({ "disabled": "disabled" }): null;
+                (validateBtn == true) ? button.attr({ "disabled": "disabled" }): null;
+                inputFiller(input, false, fill);
+            }
+
+            runChecker(input);
+            return;
+        }
+
+        //reformat allowChars email to "mail"
+        allowChars = (allowChars == "email") ? "mail" : allowChars;
 
         fieldName = (fieldName == "") ? "field " + dataIndex : fieldName;
         buttonHolder.attr({ "data-active": "false" });
@@ -303,6 +427,15 @@
         var fieldCount = indefaults.field.find(":input:not(:button):not([data-skip])").length;
         var mshide = "";
 
+        indefaults.allInputs.each(function(index) {
+            if (dataIndex < (index + 1)) {
+                if ($(this).val().length < 1) {
+                    var thisFiller = fillBucket($(this));
+                    inputFiller($(this), 'reset', true);
+                }
+            }
+        })
+
         if (anchors.initMess == false) {
 
             var iField;
@@ -314,10 +447,14 @@
             }
 
             if (voids == fieldCount) {
-                buttonHolder.attr({ "disabled": "disabled" })
-                button.attr({ "disabled": "disabled" });
+
+                if (field.find("input[required]").length > 0) {
+                    buttonHolder.attr({ "disabled": "disabled" })
+                    button.attr({ "disabled": "disabled" });
+                }
+
                 responseField.html('');
-                inputFiller(input, filler, false);
+                inputFiller(input, 'reset', fill);
                 return false;
             }
         }
@@ -325,20 +462,58 @@
         if (isRequired == false && dataLength < 1) {
             responseField.html("");
             buttonHolder.removeAttr("disabled");
-            inputFiller(input, filler, 'reset');
+            inputFiller(input, 'reset', fill);
             button.removeAttr("disabled");
             return true;
         }
 
+        if (isTextNum) {
+            if (!/^[A-Za-z0-9\s]+$/.test(dataValue)) {
+                //DO THIS
+                responseField.html(" <span class='form-validator-message'> " + fieldName + " can only contain alphabets and numbers</span>");
+                inputFiller(input, false, fill);
+                return false;
+            }
+        }
+
+        if (isTextInput && (/\d/.test(dataValue))) {
+            responseField.html(" <span class='form-validator-message'> " + fieldName + " must not contain number </span>");
+            inputFiller(input, false, fill);
+            return false;
+        }
+
+        if (isTextInput && isStrict) {
+            let strictTest;
+
+            if (strictValue === 2) {
+                strictTest = /[ `!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/.test(dataValue);
+            } else {
+                strictTest = /[ `!@#$%^&*()+\-=\[\]{};':"\\|,.<>\/?~]/.test(dataValue);
+            }
+
+            if (strictTest == true) {
+                responseField.html(" <span class='form-validator-message'> " + fieldName + " must contain only letters </span>");
+                inputFiller(input, false, fill);
+                return false;
+            }
+        }
+
+        if (isTextInput && isStrict && (/[ `!@#$%^&*()+\-=\[\]{};':"\\|,.<>\/?~]/.test(dataValue))) {
+            responseField.html(" <span class='form-validator-message'> " + fieldName + " must contain only letters </span>");
+            inputFiller(input, false, fill);
+            return false;
+        }
+
         if (isNumField == true && isNaN(dataValue)) {
+
             responseField.html(" <span class='form-validator-message'> " + fieldName + " must be number </span>");
-            inputFiller(input, filler, false);
+            inputFiller(input, false, fill);
             return false;
         }
 
         if (isNumField == true && dataValue == false && isStrict != false) {
             responseField.html(" <span class='form-validator-message'> " + fieldName + " must be valid </span>");
-            inputFiller(input, filler, false);
+            inputFiller(input, false, fill);
             return false;
         }
 
@@ -351,14 +526,14 @@
                 responseField.html(" <span class='form-validator-message'> " + fieldName + " is too long  </span>");
             }
 
-            inputFiller(input, filler, false);
+            inputFiller(input, false, fill);
 
             return false;
         }
 
         if (dataLength < 1) {
             responseField.html("<span class='form-validator-message'> Please fill " + fieldName + " </span>");
-            inputFiller(input, filler, false);
+            inputFiller(input, false, fill);
             return false;
         }
 
@@ -366,33 +541,52 @@
 
             if (allowSpace == false) {
                 if (/\s/.test(dataValue)) {
-                    responseField.html("<span class='form-validator-message'> Invalid space in " + fieldName + "</span>");
-                    inputFiller(input, filler, false);
+                    responseField.html("<span class='form-validator-message'> invalid space in " + fieldName + "</span>");
+                    inputFiller(input, false, fill);
                     return false;
                 }
             }
 
-            if (allowChars == "text" && dataLength > 1) {
-                if (/^[\w+\s]*$/i.test(dataValue) != true) {
-                    responseField.html("<span class='form-validator-message'> Invalid characters in " + fieldName + "</span>");
-                    inputFiller(input, filler, false);
-                    return false;
-                }
-            } else if (allowChars != "text" && allowChars != 'all') {
-
-                if (allowChars == "rex" && rexPattern != undefined) {
-                    var pattern = "^[" + rexPattern + "]*$";
-                } else {
-                    var pattern = "^[\\w+\\s" + allowChars + "]*$";
-                }
-
+            if (allowChars === 'rex' && rexPattern != undefined) {
+                let pattern = "^[" + rexPattern + "]*$";
                 var regex = new RegExp(pattern, "i");
 
                 if (regex.test(dataValue) != true) {
-                    responseField.html("<span class='form-validator-message'> Invalid characters in " + fieldName + "</span>");
-                    inputFiller(input, filler, false);
+                    responseField.html("<span class='form-validator-message'> invalid characters in " + fieldName + "</span>");
+                    inputFiller(input, false, fill);
                     return false;
                 }
+            }
+
+            // if (allowChars == "text" && dataLength > 1) {
+            //     if (/^[\w+\s]*$/i.test(dataValue) != true) {
+            //         responseField.html("<span class='form-validator-message'> invalid characters in " + fieldName + "</span>");
+            //         inputFiller(input, false, fill);
+            //         return false;
+            //     }
+            // } else if (allowChars != "text" && allowChars != 'all') {
+
+            //     if (allowChars == "rex" && rexPattern != undefined) {
+            //         var pattern = "^[" + rexPattern + "]*$";
+            //     } else {
+            //         var pattern = "^[\\w+\\s" + allowChars + "]*$";
+            //     }
+
+            //     var regex = new RegExp(pattern, "i");
+
+            //     if (regex.test(dataValue) != true) {
+            //         responseField.html("<span class='form-validator-message'> invalid characters in " + fieldName + "</span>");
+            //         inputFiller(input, false, fill);
+            //         return false;
+            //     }
+            // }
+        }
+
+        if ((isUrlField)) {
+            if (!isValidHttpUrl(dataValue)) {
+                responseField.html("<span class='form-validator-message'> invalid url supplied in " + fieldName + "</span>");
+                inputFiller(input, false, fill);
+                return false;
             }
         }
 
@@ -401,7 +595,7 @@
             var pattern = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
             if (pattern.test(String(dataValue).toLowerCase()) == false) {
                 responseField.html("<span class='form-validator-message'> invalid " + fieldName + "</span>");
-                inputFiller(input, filler, false);
+                inputFiller(input, false, fill);
                 return false;
             }
 
@@ -414,66 +608,203 @@
             if (passFieldCount > 1) {
                 if ((userPassField1.val() === userPassField2.val()) && (userPassField1.val() != false) && (userPassField1.val() != "undefined")) {
                     //password matched
+                    inputFiller(input, true, fill);
                 } else {
                     //password mismatch
                     responseField.html("<span class='form-validator-message'> password does not match </span>");
-                    inputFiller(input, filler, false);
+                    if (userPassField1.val() != userPassField2.val()) {
+                        let passFiller;
+
+                        if (userPassField1.val().length < 1) {
+                            inputFiller(userPassField1, 'reset', fill);
+                        } else {
+                            inputFiller(userPassField1, false, fill);
+                        }
+
+                        if (userPassField2.val().length < 1) {
+                            inputFiller(userPassField2, 'reset', fill);
+                        } else {
+                            inputFiller(userPassField2, false, fill);
+                        }
+                    }
                     return false;
                 }
             }
         }
 
-        //enable button;
-        responseField.html("");
-        buttonHolder.attr({ "data-active": "true" });
-        (validateBtn == true) ? buttonHolder.removeAttr("disabled"): null;
-        (validateBtn == true) ? button.removeAttr("disabled"): null;
-        inputFiller(input, filler, true);
-        return true;
+        //return false;
+
+
+        if (input.attr('data-url') && (input.attr('data-process') != 'success')) {
+
+            input.attr({ 'data-process': 'failed' });
+
+            if (!input.attr('data-req')) {
+                input.attr({ 'data-req': true });
+
+                let dataUrl = input.data('url');
+                let dataKeys = input.data('keys');
+
+                if ((typeof dataKeys == 'undefined') || (dataKeys == false)) {
+                    dataKeys = "valid msg";
+                }
+
+                dataKeys = $.trim(dataKeys);
+
+                dataKeys = dataKeys.split(' ');
+
+                if (dataKeys.length === 1) { dataKeys[1] = "msg"; }
+
+                let jsonValid = dataKeys[0];
+                let jsonError = dataKeys[1];
+                console.log(dataKeys)
+                console.log(jsonError)
+
+                let timeout = 1500;
+
+                if (dataUrl !== false && typeof dataUrl !== 'undefined') {
+                    if (isValidHttpUrl(dataUrl)) {
+                        //send url;
+
+                        setTimeout(() => {
+
+                            (validateBtn == true) ? buttonHolder.attr({ "disabled": "disabled" }): null;
+                            (validateBtn == true) ? button.attr({ "disabled": "disabled" }): null;
+
+                            if (!input.attr('data-proc')) {
+
+                                input.attr({ 'data-proc': true });
+
+                                $.ajax({
+                                    url: dataUrl,
+                                    data: { 'input': dataValue },
+                                    complete: (XMLHttpRequest) => {
+                                        input.removeAttr('data-proc');
+
+                                        response = XMLHttpRequest.responseText;
+                                        response = JSON.parse(response);
+
+                                        let dataProcess = 'failed';
+
+                                        valid = response[jsonValid];
+
+                                        if (valid === true) {
+                                            dataProcess = 'success';
+                                        } else {
+                                            let msg = response[jsonError] || 'data validation failed';
+                                            responseField.html(msg);
+                                            dataProcess = 'failed';
+                                        }
+
+                                        input.attr({ 'data-process': dataProcess });
+
+                                        setTimeout(() => {
+                                            anchors.ajax = dataProcess;
+                                            BasicValidator(anchors);
+                                        }, timeout);
+
+                                    }
+                                })
+
+                            }
+                        }, timeout);
+
+                        inputFiller(input, false, fill);
+                        indefaults.errAjax = true;
+                        responseField.html('');
+                        return false;
+
+                    } else {
+                        responseField.html("invalid data request");
+                        inputFiller(userPassField2, false, fill);
+                        indefaults.errAjax = true;
+                        return false;
+                    }
+                }
+
+            }
+
+            if (input.attr('data-process') === 'failed') { return false; }
+
+        }
+
+        if (indefaults.field.find('[data-process="failed"]').length < 1) {
+            //enable button;
+            responseField.html("");
+            buttonHolder.attr({ "data-active": "true" });
+            (validateBtn == true) ? buttonHolder.removeAttr("disabled"): null;
+            (validateBtn == true) ? button.removeAttr("disabled"): null;
+            inputFiller(input, true, fill);
+            return true;
+        }
+
     }
 
-    function inputFiller(input, filler, action) {
+    function isValidHttpUrl(string) {
+        let url;
+
+        try {
+            url = new URL(string);
+        } catch (_) {
+            return false;
+        }
+
+        let protocols = ["http:", "https:"];
+
+        return protocols.includes(url.protocol) ? true : false;
+
+    }
+
+    function inputFiller(input, action, fill) {
+
+        if (fill === false) { return; }
+
+        filler = fillBucket($(input));
 
         if (action === "reset") {
             if (filler.success || filler.error) {
                 input.css({ 'color': '' });
+                input.css({ 'background-color': '' });
             }
-
-            if (filler.shadow) {
-                input.css({ 'box-shadow': '' });
-            }
-
+            input.css({ 'box-shadow': '' });
             return;
         }
 
-        let key, color, width;
+        let key1, key2, color, textColor, shadow;
 
-        key = (action === true) ? 'success' : 'error';
+        key1 = (action === true) ? 'success' : 'error';
+        key2 = (action === true) ? 'successText' : 'errorText';
 
-        if ((key === 'success') || (key === 'error')) {
-            color = filler[key];
+        if (filler.shadow) { shadow = filler.shadow }
 
-
+        if ((key1 === 'success') || (key1 === 'error')) {
+            fillColor = filler[key1];
+            textColor = filler[key2];
 
             if (filler.type === 'fill') {
-                input.css({ 'background-color': color });
-            }
-
-            if (filler.type === 'text') {
+                input.css({ 'background-color': fillColor });
+                if (filler.successText || filler.errorText) {
+                    input.css({ 'color': textColor });
+                }
+            } else if (filler.type === 'text') {
                 input.css({ "color": color });
+                if (shadow) {
+                    if (color == '') {
+                        input.css({ 'box-shadow': `` });
+                    } else {
+                        input.css({ 'box-shadow': `0 0 0 ${shadow}px ${color} inset` });
+                    }
+                }
+            } else if (filler.type === 'shadow') {
+                input.css({ 'border': `0 0 0 ${shadow}px ${color} inset` });
             }
 
             if (filler.type === 'shadow') {
-                width = filler.border;
-                input.css({ 'border': `0 0 0 ${width}px ${color} inset` });
-            }
-
-            if (filler.type === 'line') {
-                width = filler.shadow;
-                if ((key == "error") && (color == "")) {
-                    input.css({ 'color': `${color}`, 'box-shadow': '' });
+                // input.css({ 'box-shadow': `0 0 0 ${shadow}px ${fillColor} inset` });
+                if ((key1 != "") && (fillColor != "")) {
+                    input.css({ 'box-shadow': `0 0 0 ${shadow}px ${fillColor} inset` });
                 } else {
-                    input.css({ 'color': `${color}`, 'box-shadow': `0 0 0 ${width}px ${color} inset` });
+                    input.css({ 'box-shadow': '' });
                 }
             }
         }
@@ -515,6 +846,9 @@
             anchors.userPassField2 = fieldObject.userPassField2;
             anchors.validateBtn = fieldObject.validateBtn;
             anchors.initMess = fieldObject.initMess || false;
+            anchors.fill = fieldObject.fill;
+
+            fill = anchors.fill;
 
             if (anchors.isRequired === false) {
                 if (anchors.dataLength > 0) {
@@ -525,7 +859,7 @@
 
                 (fieldObject.validateBtn == true) ? fieldObject.submitBtn.removeAttr("disabled"): null;
                 (fieldObject.validateBtn == true) ? fieldObject.buttonHolder.removeAttr("disabled"): null;
-                inputFiller(input, filler, 'reset');
+                inputFiller(input, 'reset', fill);
                 return true;
             }
 
@@ -548,10 +882,6 @@
        data-type may be (number,text,password) etc. 
 
      required // for required fields to be validated
-
-
-    NOTE: This validator does not support email validation as at this moment. Email will be verified simply as a textField
-    NOTE: data-type should not be used for passwords. Use <input type='password'> instead
     NOTE: Numeric field will not be allowed to have characters included. Any addition of characters will reset the field
     */
 
@@ -565,6 +895,17 @@ function formValidator() {
     $("[data-form='validate']").each(function() {
         var thisForm = $(this);
         var thisId = thisForm.data("id") || thisForm.attr("id");
+
+        thisForm.find(":input:not(:button):not([data-skip])").on('input keyup', function() {
+            let inputForm = $(this).closest("[data-form]");
+            if (thisForm.attr('data-pick') !== 'true') {
+                thisForm.removeAttr('data-pick');
+                inputForm.attr({ 'data-pick': true });
+                let newresPane = inputForm.data("resp") || false;
+                console.log(newresPane)
+                inputForm.validateForm({ responsePane: newresPane });
+            }
+        })
 
         var tId = thisForm.data("id") ? '[data-id="' + thisId + '"]' : '#' + thisId;
         var tForm = (thisId) ? tId : thisForm;

@@ -14,6 +14,14 @@
     min-width: 120px;
 }
 
+code.main {
+    margin-left: 0;
+}
+
+.form-field .i-flex-full input {
+    transition: color .4s ease-in-out, box-shadow .4s ease-in-out !important;
+}
+
 @media screen and (max-width:1000px) {
     .content-field {
         width: 100%;

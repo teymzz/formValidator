@@ -23,7 +23,7 @@
                 <div class="">
                     <h2>Validating password fields</h2>
                     <span class="font-em-d85">
-                        Input fields with attribute <code>type="password"</code> will be validated. When two of this field exist in the form field, both fields is used to compare each other to validate the matches. <br>
+                        Input fields with attribute <code>type="password"</code> and <code>data-check</code> will be validated. When two of this field exist in the form field, both fields will compare each other to validate the matches. <br>
                     </span>
                 </div><br>
                 <div class="form-title c-red-dd">
@@ -34,11 +34,11 @@
                     <div class="resp"></div>
                     <fieldset class="i-flex-full">
                         <button class="flex-child bc-silver c-white padd-x-10 flex-ico">Password</button>
-                        <input type="password" data-min="5" data-max="10" name="user" required placeholder="5 - 10 chars only" class="flex-full" style="padding-left:10px;">
+                        <input type="password" data-min="5" data-max="10" name="user" data-check required placeholder="5 - 10 chars only" class="flex-full" style="padding-left:10px;">
                     </fieldset>
                     <fieldset class="i-flex-full">
                         <button class="flex-child bc-silver c-white padd-x-10 flex-ico">Retype</button>
-                        <input type="password" data-min="5" data-max="10" name="user" required placeholder="5 - 10 chars only" class="flex-full" style="padding-left:10px;">
+                        <input type="password" data-min="5" data-max="10" name="user" data-check required placeholder="5 - 10 chars only" class="flex-full" style="padding-left:10px;">
                     </fieldset>
                     <fieldset class="i-flex-full padd-10 bc bc-red-d bh-red-dd c-white anc-btn-link">
                         <button type="submit" data-type="submit" class="flex-btn-full c-white"> submit </button>
