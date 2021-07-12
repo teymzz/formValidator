@@ -192,44 +192,52 @@
     function inputAttributes(elem) {
 
         // field declarations
-        var isRequired = ($(elem).attr("required")) ? true : false;
-        var formField = indefaults.field;
+        let isRequired = ($(elem).attr("required")) ? true : false;
+        let formField = indefaults.field;
 
         // length controllers
-        var dataMin = $(elem).attr('data-min') || 0;
-        var dataMax = $(elem).attr('data-max') || 1000000000000000000;
+        let dataMin = $(elem).attr('data-min') || 0;
+        let dataMax = $(elem).attr('data-max') || 1000000000000000000;
 
         // type controller
-        var dataType = ($(elem).attr("type")) ? $(elem).attr("type") : (($(elem).attr("data-type")) ? $(elem).attr("data-type") : "text");
+        let dataType = ($(elem).attr("type")) ? $(elem).attr("type") : (($(elem).attr("data-type")) ? $(elem).attr("data-type") : "text");
 
         //  input name
-        var fieldName = ($(elem).attr("name")) ? $(elem).attr("name") + " field" : "";
+        let fieldName = ($(elem).attr("name")) ? $(elem).attr("name") + " field" : "";
         fieldName = fieldName.replace("_", " ");
         fieldName = ($(elem).attr("data-fieldname")) ? $(elem).attr("data-fieldname") : fieldName;
 
         // field settings
-        var allowSpace = ($(elem).attr("allow-space") == "false") ? false : true; //def: false
-        var specialChars = $(elem).attr("allow-chars");
-        var allowChars = (specialChars == 'all' || specialChars == '*') ? "all" : ((specialChars == null || specialChars == undefined) ? "text" : specialChars);
+        let allowSpace = ($(elem).attr("allow-space") == "false") ? false : true; //def: false
+        let specialChars = $(elem).attr("allow-chars");
+        let allowChars = (specialChars == 'all' || specialChars == '*') ? "all" : ((specialChars == null || specialChars == undefined) ? "text" : specialChars);
 
         // input data pointers
-        var rexPattern = $(elem).attr("data-rex");
-        var isNumField = ($(elem).attr('type') == 'number' || $(elem).attr('data-type') == 'number') ? true : false;
-        var isPassField = ($(elem).attr('type') == 'password' || $(elem).attr('data-type') == 'password') ? true : false;
-        var isTextField = ($(elem).attr('type') == 'text' || $(elem).attr('type') == '' || $(elem).attr('type') == undefined);
-        var isTextInput = ($(elem).attr('data-type') == 'text') ? true : false;
-        var isTextNum = ($(elem).attr('data-type') == 'text-num') ? true : false;
-        var isUrlField = ($(elem).attr('data-type') == 'url') ? true : false;
-        var isMailField = ($(elem).attr('type') == 'email' || $(elem).attr('data-type') == 'email') ? true : false;
-        var isTextArea = ($(elem).prop('tagName') == 'TEXTAREA' || $(elem).attr('data-type') == 'textarea') ? true : false;
-        var isStrict = (typeof $(elem).attr("data-strict") !== 'undefined' && $(elem).attr("data-strict") !== false) ? true : false;
-        var strictValue = (+$(elem).attr("data-strict") === 2) ? 2 : 1;
+        let rexPattern = $(elem).attr("data-rex");
+        let isNumField = ($(elem).attr('type') == 'number' || $(elem).attr('data-type') == 'number') ? true : false;
+        let isPassField = ($(elem).attr('type') == 'password' || $(elem).attr('data-type') == 'password') ? true : false;
+        let isTextField = ($(elem).attr('type') == 'text' || $(elem).attr('type') == '' || $(elem).attr('type') == undefined);
+        let isTextInput = ($(elem).attr('data-type') == 'text') ? true : false;
+        let isTextNum = ($(elem).attr('data-type') == 'text-num') ? true : false;
+        let isUrlField = ($(elem).attr('data-type') == 'url') ? true : false;
+        let isCreditCard = ($(elem).attr('data-type') == 'credit-card') ? true : false;
+        let isMailField = ($(elem).attr('type') == 'email' || $(elem).attr('data-type') == 'email') ? true : false;
+        let isTextArea = ($(elem).prop('tagName') == 'TEXTAREA' || $(elem).attr('data-type') == 'textarea') ? true : false;
+        let isStrict = (typeof $(elem).attr("data-strict") !== 'undefined' && $(elem).attr("data-strict") !== false) ? true : false;
+        let strictValue = (+$(elem).attr("data-strict") === 2) ? 2 : 1;
+
+        // //cards pointers
+        // let validCards = ['americaexpress', 'cc', 'discover', 'mastercard', 'verve', 'visa', 'discover'];
+
+        // let amexRex = /^(?:4[0-9]?{12}{})/;
+        // let ccRex   = //;
+        // let discRex = //;
+        // let mastRex = //;
+        // let discRex = //;
 
 
-        var error_response = "invalid data supplied in" + fieldName;
-
+        //input color object
         let objectFiller = {};
-
         objectFiller = fillBucket(elem);
 
         //split the color fill
@@ -260,6 +268,7 @@
             isNumField: isNumField,
             isPassField: isPassField,
             isUrlField: isUrlField,
+            isCreditCard: isCreditCard,
             isMailField: isMailField,
             isTextArea: isTextArea,
             isRequired: isRequired,
@@ -357,6 +366,7 @@
         let isTextInput = anchors.isTextInput;
         let isTextNum = anchors.isTextNum;
         let isUrlField = anchors.isUrlField;
+        let isCreditCard = anchors.isCreditCard;
         let isMailField = anchors.isMailField;
         let isPassField = anchors.isPassField;
         let isNumField = anchors.isNumField;
@@ -465,6 +475,51 @@
             inputFiller(input, 'reset', fill);
             button.removeAttr("disabled");
             return true;
+        }
+
+        if (isCreditCard) {
+            if (!/^[0-9]+$/.test(dataValue)) {
+                responseField.html(" <span class='form-validator-message'> " + fieldName + " can only contain numbers</span>");
+                inputFiller(input, false, fill);
+                return false;
+            }
+
+            let ccDataValue = dataValue.substring(0, dataValue.lenght - 1);
+            let reverseDataValue = ccDataValue.split("").reverse();
+            reverseDataValue = reverseDataValue.map((reverse) => {
+                if ((reverse % 2) !== 0) {
+                    let newverse = reverse * 2;
+                    if (newverse > 9) {
+                        newverse = newverse - 9;
+                    }
+                    return newverse;
+                } else {
+                    return reverse;
+                }
+            }).reduce((a, b) => a + b, 0); //.join("");
+
+            if ((reverseDataValue % 10) != (ccDataValue.slice(-1))) {
+                //credit card is not valid
+                responseField.html(" <span class='form-validator-message'> " + fieldName + " not valid</span>");
+                inputFiller(input, false, fill);
+                return false;
+            }
+
+            //International cards
+            let visa = /^(?:4[0-9]{12}(?:[0-9]{3})?)$/;
+            let mast = /^(?:5[1-5][0-9]{14})$/;
+            let amex = /^(?:3[47][0-9]{13})$/;
+            let disc = /^(?:6(?:011 | 5[0-9][0-9][0-9]{16,19}))$/;
+
+            //Nigerian card
+            let verve = /^(?:(506[0-9][0-9][0-9]{10})|(65002(7)?[0-9]{10, 11}))$/;
+
+            if (!visa.test(dataValue) && !mast.test(dataValue) && !amex.test(dataValue) && !disc.test(disc) && !verve.test(dataValue)) {
+                responseField.html(" <span class='form-validator-message'> " + fieldName + " card not recognized </span>");
+                inputFiller(input, false, fill);
+                return false;
+            }
+
         }
 
         if (isTextNum) {
@@ -635,12 +690,14 @@
         //return false;
 
 
-        if (input.attr('data-url') && (input.attr('data-process') != 'success')) {
+        if (input.attr('data-url') && (input.attr('data-process') !== 'success')) {
 
             input.attr({ 'data-process': 'failed' });
 
+
             if (!input.attr('data-req')) {
                 input.attr({ 'data-req': true });
+
 
                 let dataUrl = input.data('url');
                 let dataKeys = input.data('keys');
@@ -663,6 +720,7 @@
                 let timeout = 1500;
 
                 if (dataUrl !== false && typeof dataUrl !== 'undefined') {
+
                     if (isValidHttpUrl(dataUrl)) {
                         //send url;
 
@@ -724,8 +782,6 @@
 
             }
 
-            if (input.attr('data-process') === 'failed') { return false; }
-
         }
 
         if (indefaults.field.find('[data-process="failed"]').length < 1) {
@@ -738,6 +794,14 @@
             return true;
         }
 
+    }
+
+    function range(a, b) {
+        if (b === undefined) {
+            b = a;
+            a = 1;
+        }
+        return [...Array(b - a + 1).keys()].map(x => x + a);
     }
 
     function isValidHttpUrl(string) {

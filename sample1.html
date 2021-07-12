@@ -65,6 +65,9 @@
                         <br>            &lt;/button&gt;
                         <br>        &lt;/fieldset&gt;
                         <br> &lt;/div&gt;
+                        <br>
+                        <br>
+                        &lt;script&gt; formValidator(); &lt;/fieldset&gt;
                     </code>
                 </div>
 
@@ -89,12 +92,12 @@
                             length.
                         </li>
                         <li>
-                            Whenever a button with attribute <code>data-type="submit"</code> or <code>type="submit"</code> has a parent of <code>fieldset</code>, that parent will also be given an attribute of <code>disabled="disabled"</code> also until
-                            all conditions required for the form to be valid are met.
+                            Whenever a button with attribute <code>data-type="submit"</code> or <code>type="submit"</code> has a parent of <code>fieldset</code>, that parent will also be given an attribute of <code>disabled="disabled"</code> until all
+                            conditions required for the form to be valid are met.
                         </li>
                         <li>
-                            All fields are automatically numbered unless the field has a <code>name</code> or <code>data-fieldname</code> attribute. This is highly discouraged. In the field above, no name was set for both fields. So the fields are address
-                            as field 1 and field 2 respectively
+                            All fields are automatically numbered unless the field has a <code>name</code> or <code>data-fieldname</code> attribute. It is highly discouraged to allow the formValidor to number the fields itself. In the field above, no
+                            name was set for both fields. So the fields are addressed as field 1 and field 2 respectively
                         </li>
                         <li>
                             In other samples, the code will not be revealed, only the attributes will be explained.
