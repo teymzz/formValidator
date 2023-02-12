@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Validator</title>
+    <link rel="stylesheet" href="css/design.css">
+    <link rel="stylesheet" href="css/colors.css">
+    <link rel="stylesheet" href="css/index.css">
+    <script src="js/jquery-3.5.1.min.js"></script>
+    <title>Form Validator -Intro</title>
+</head>
+
+<body>
+    <div id="userscreen" data-height="full" data-form="validate" data-resp=".resp" class="grid-center bc-sky-blue-dd relative">
+        <div class="overlay bg-cover grid-center">
+            <div class="padd-20 content-field">
+                <div class=" padd-x-4">
+                    <h2>Form Validation Plugin</h2>
+
+                    <span class="font-em-d85">
+                        Forms are validated by calling the <code>formValidator()</code> function once, after which <code>data-form="validate"</code> attribute is added to the form field(s) containing the form. Other attributes that may be used to initialize the form include: <br><br>
+                        
+                        <div class="wid-fit"><h3>Form Field Attributes</h3></div>
+
+                        <code>data-form="validate"</code> - for selecting form field to be validated <br>
+                        <code>data-resp</code> - for selecting the message display field  <br>
+                        <code>data-init</code> - for intializing message display <br>
+                        <code>data-wait</code> - for setting message display time <br>
+                        <code>data-fillset</code> - for applying color display <br>
+                        <code>data-fill</code>- for setting colors <br>
+                    </span>
+                </div><br>
+
+                <div class="padd-x-4">
+
+                    <span class="font-em-d85">
+                        <div class="wid-fit"><h3>Input Field Attributes</h3></div>
+                        Forms are validated by calling the <code>formValidator()</code> function once, after which <code>data-form="validate"</code> attribute is added to the form field(s) containing the form. Other attributes that may be used to initialize the form include: <br><br>
+
+                        <code class="main">name=""</code> - for naming an input field <br>
+                        <code class="main">data-fieldname=""</code> - sets or overides the <code>"name"</code> attribute above<br>
+                        <code class="main">required</code> - all required fields will be validated<br>
+                        <code class="main">data-wait</code> - for setting message display time for a particular field<br>
+                        <code class="main">data-fillset</code> - for applying color display for a particular field <br>
+                        <code class="main">data-fill</code>- for setting colors for a particular field <br>
+                        <code class="main">data-skip</code> - for skipping input field's validatation <br>
+                        <code class="main">data-min</code> - for setting minimum acceptable length of characters<br>
+                        <code class="main">data-max</code> - for setting maximum acceptable length of characters<br>
+                        <code class="main">data-rex</code> - for setting rex pattern to be used for input valiation <br>
+                        <code class="main">data-space="false"</code> - for disabling space characters <br>
+                        <code class="main">allow-chars</code> - for switching validation type from the default set <br>
+                        <code class="main">data-strict</code> - for declaring input field as strictly for texts or numbers <br>
+                        <code class="main">data-type</code> - for declaring an input or button role as input <b>email</b> , <b>number</b>, <b>submit</b>, <b>text</b>, <b>text-num</b>, <b>url</b> ... <br><br>
+
+                        <b>Ajax Attributes</b> <br>
+                        <code class="main">data-url</code> - for sending ajax requests <br>
+                        <code class="main">data-keys</code> - for fetching ajax response keys <br>                                                
+
+                        <br> To understand the use of this plugin, it is required that each pages be visited respectively <br>
+
+                        <span class="links c-sky-blue-dd">
+                            <a href="sample1.html">BEGIN TUTORIAL</a>
+                        </span>
+
+
+
+
+                </div>
+
+                <div class="form-field hide">
+                    <div class="form-title c-red-dd hide">
+                        <h2>My Form</h2>
+                    </div> <br>
+                    <div class="resp"></div>
+                    <fieldset class="i-flex-full padd-x-4">
+                        <input type="text" required placeholder="firstname" data-min="10" class="flex-full">
+                    </fieldset>
+                    <fieldset class="i-flex-full padd-x-4">
+                        <input type="text" required placeholder="lastname" data-min="10" class="flex-full">
+                    </fieldset>
+                    <fieldset class="i-flex-full padd-x-4">
+                        <input type="text" required placeholder="username" data-min="10" data-max="20" class="flex-full">
+                    </fieldset>
+                    <fieldset class="i-flex-full padd-x-4">
+                        <input type="password" required placeholder="password" class="flex-full">
+                    </fieldset>
+                    <fieldset class="i-flex-full padd-x-4">
+                        <input type="password" required placeholder="retype" class="flex-full">
+                    </fieldset>
+                    <fieldset class="i-flex-full padd-x-4">
+                        <input type="phone" data-type="number" required placeholder="phone" class="flex-full">
+                    </fieldset>
+                    <fieldset class="i-flex-full padd-10 bc bc-red-d bh-red-dd c-white anc-btn-link" data-type="submit">
+                        <button class="flex-btn-full c-white"> submit </button>
+                    </fieldset>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="js/formValidator.js"></script>
+    <script>
+        formValidator();
+    </script>
+</body>
+
+</html>

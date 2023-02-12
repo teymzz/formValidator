@@ -1,0 +1,2 @@
+#Form Validator
+FormValidator jquery plugin uses attributes to validate input forms. You can do simple and complex validations for credit cards, numbers, texts, text fields, buttons, email, characters allowed, restrict space characters, validate and match passwords, set background, text and border colors, perform ajax validation, set response time, skip field validation, validate using regex and many more amazing features.
